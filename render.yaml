@@ -20,6 +20,12 @@ services:
         value: DestinyTV@Admin2024!
       - key: DB_PATH
         value: /var/data/destiny_tv.db
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
     disk:
       name: destiny-tv-data
       mountPath: /var/data
