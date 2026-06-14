@@ -1,16 +1,22 @@
-const Database = require('better-sqlite3');
+const { DatabaseSync } = require('node:sqlite');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
 
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'destiny_tv.db');
+
+// Ensure parent directory exists
+const dbDir = path.dirname(DB_PATH);
+if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
+
 let db;
 
 function getDB() {
   if (!db) {
-    db = new Database(DB_PATH);
-    db.pragma('journal_mode = WAL');
-    db.pragma('foreign_keys = ON');
+    db = new DatabaseSync(DB_PATH);
+    db.exec('PRAGMA journal_mode = WAL');
+    db.exec('PRAGMA foreign_keys = ON');
   }
   return db;
 }
@@ -87,17 +93,17 @@ function initDB() {
   if (cats.c === 0) {
     const insertCat = db.prepare('INSERT INTO categories (id, name, slug, description, icon, sort_order) VALUES (?, ?, ?, ?, ?, ?)');
     [
-      [uuidv4(), 'Sermons', 'sermons', 'Powerful messages from the Word of God', '📖', 1],
-      [uuidv4(), 'Worship', 'worship', 'Praise and worship sessions', '🎵', 2],
-      [uuidv4(), 'Bible Study', 'bible-study', 'In-depth Bible study sessions', '📚', 3],
-      [uuidv4(), 'Events', 'events', 'Church events and conferences', '🎉', 4],
-      [uuidv4(), 'Testimonies', 'testimonies', 'Inspiring testimonies', '✨', 5],
-      [uuidv4(), 'Prayer', 'prayer', 'Prayer and intercession', '🙏', 6],
+      [uuidv4(), 'Sermons', 'sermons', 'Powerful messages from the Word of God', '\uD83D\uDCD6', 1],
+      [uuidv4(), 'Worship', 'worship', 'Praise and worship sessions', '\uD83C\uDFB5', 2],
+      [uuidv4(), 'Bible Study', 'bible-study', 'In-depth Bible study sessions', '\uD83D\uDCDA', 3],
+      [uuidv4(), 'Events', 'events', 'Church events and conferences', '\uD83C\uDF89', 4],
+      [uuidv4(), 'Testimonies', 'testimonies', 'Inspiring testimonies', '\u2728', 5],
+      [uuidv4(), 'Prayer', 'prayer', 'Prayer and intercession', '\uD83D\uDE4F', 6],
     ].forEach(row => insertCat.run(...row));
   }
 
   // Seed default admin
-  const admin = db.prepare('SELECT COUNT(*) as c FROM users WHERE role = ?').get('admin');
+  const admin = db.prepare("SELECT COUNT(*) as c FROM users WHERE role = 'admin'").get();
   if (admin.c === 0) {
     const hashedPwd = bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'DestinyTV@Admin2024!', 10);
     db.prepare('INSERT INTO users (id, name, email, password, role, status) VALUES (?, ?, ?, ?, ?, ?)').run(
@@ -108,10 +114,10 @@ function initDB() {
       'admin',
       'active'
     );
-    console.log('✅ Default admin created: admin@destinytv.com / DestinyTV@Admin2024!');
+    console.log('Default admin created');
   }
 
-  console.log('✅ Database initialized');
+  console.log('Database initialized at', DB_PATH);
 }
 
 module.exports = { getDB, initDB };

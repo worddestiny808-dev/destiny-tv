@@ -84,7 +84,7 @@ router.get('/:id', authenticate, (req, res) => {
 
   // Track watch history
   db.prepare(`INSERT INTO watch_history (id, user_id, video_id) VALUES (?, ?, ?) 
-    ON CONFLICT DO NOTHING`).run(uuidv4(), req.user.id, req.params.id);
+    `).run(uuidv4(), req.user.id, req.params.id);
 
   // Get related videos
   const related = db.prepare(`SELECT id, title, thumbnail_url, duration, views, created_at, speaker
