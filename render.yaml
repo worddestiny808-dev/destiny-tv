@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: destiny-tv
+    runtime: node
+    region: oregon
+    plan: free
+    nodeVersion: 20
+    buildCommand: cd frontend && npm install && npm run build && cd ../backend && npm install
+    startCommand: cd backend && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        value: admin@destinytv.com
+      - key: ADMIN_PASSWORD
+        value: DestinyTV@Admin2024!
+      - key: DB_PATH
+        value: /var/data/destiny_tv.db
+    disk:
+      name: destiny-tv-data
+      mountPath: /var/data
+      sizeGB: 10
